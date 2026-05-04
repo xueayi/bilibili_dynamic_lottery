@@ -1,0 +1,19 @@
+services:
+  bilibili-lottery:
+    image: ${DOCKERHUB_USERNAME:-your_username}/bilibili_dynamic_lottery:latest
+    # 本地构建时取消注释 build 行，注释 image 行
+    # build: .
+    ports:
+      - "8080:80"
+    environment:
+      # 前端运行时配置 - 根据实际部署地址修改
+      - VITE_API_ROOT_URL=https://your-domain.com/api/index.php
+      - VITE_BILIBLI_LINK=
+      - VITE_GITHUB_LINK=
+      - VITE_GITHUB_BILIBILI_API_COLLECT_LINK=https://socialsisteryi.github.io/bilibili-API-collect/
+      - VITE_APP_VERSION=2.5.0
+    volumes:
+      # 敏感配置文件 - 请先从 docker/config/ 复制示例文件并填写实际值
+      - ./docker/config/cookie.txt:/var/www/html/config/cookie.txt
+      - ./docker/config/env.php:/var/www/html/api/env.php
+    restart: unless-stopped

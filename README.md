@@ -61,6 +61,94 @@
 6. 运行  `npm run build` 可以生成 `dist` 目录, 里面包含构建好的前端代码
 7. 把 `dist` 目录里的文件部署到前端的服务器
 
+## Docker 部署方法（推荐）
+
+### 前提条件
+- 安装 [Docker](https://docs.docker.com/get-docker/) 和 [Docker Compose](https://docs.docker.com/compose/install/)
+
+### 快速开始
+
+1. 克隆项目到本地
+   ```bash
+   git clone https://github.com/hexie2108/bilibili_dymaic_lottery.git
+   cd bilibili_dymaic_lottery
+   ```
+
+2. 准备敏感配置文件
+   ```bash
+   # 从示例文件复制并编辑
+   cp docker/config/cookie.example.txt docker/config/cookie.txt
+   cp docker/config/env.example.php docker/config/env.php
+   # 编辑 cookie.txt 填入B站账号的 SESSDATA
+   # 编辑 env.php 按需修改配置
+   ```
+
+3. 修改 `docker-compose.yml` 中的环境变量
+   ```yaml
+   environment:
+     - VITE_API_ROOT_URL=https://your-domain.com/api/index.php  # 改为你的实际地址
+     - VITE_APP_VERSION=2.5.0
+   ```
+
+4. 启动服务
+   ```bash
+   docker compose up -d
+   ```
+
+5. 访问 `http://localhost:8080` 即可使用
+
+### 常用命令
+```bash
+docker compose up -d          # 后台启动
+docker compose down            # 停止服务
+docker compose logs -f         # 查看日志
+docker compose pull            # 拉取最新镜像
+docker compose up -d --force-recreate  # 使用新镜像重建容器
+```
+
+### 本地构建镜像
+如果不使用 Docker Hub 的预构建镜像，可以本地构建：
+```bash
+# 修改 docker-compose.yml，注释 image 行，取消注释 build 行
+docker compose up -d --build
+```
+
+### 环境变量说明
+
+| 变量名 | 说明 | 默认值 |
+|---|---|---|
+| `VITE_API_ROOT_URL` | 后端 API 完整地址 | `http://localhost/api/index.php` |
+| `VITE_BILIBLI_LINK` | B站频道链接 | 空 |
+| `VITE_GITHUB_LINK` | GitHub 项目链接 | 空 |
+| `VITE_GITHUB_BILIBILI_API_COLLECT_LINK` | B站 API 文档链接 | `https://socialsisteryi.github.io/bilibili-API-collect/` |
+| `VITE_APP_VERSION` | 网页显示版本号 | 空 |
+
+### 配置文件说明
+
+| 文件 | 挂载路径 | 说明 |
+|---|---|---|
+| `docker/config/cookie.txt` | `/var/www/html/config/cookie.txt` | B站账号的 SESSDATA Cookie |
+| `docker/config/env.php` | `/var/www/html/api/env.php` | PHP 后端环境配置 |
+
+> 首次启动时，如果未挂载配置文件，容器会自动从示例文件复制。
+
+### GitHub Actions 自动构建
+
+项目配置了 GitHub Actions 工作流，在推送版本标签时自动构建并推送到 Docker Hub。
+
+**使用方式：**
+1. 在 GitHub 仓库 Settings → Secrets and variables → Actions 中配置：
+   - `DOCKERHUB_USERNAME` — Docker Hub 用户名
+   - `DOCKERHUB_TOKEN` — Docker Hub Access Token
+2. 推送标签触发自动构建：
+   ```bash
+   git tag v2.5.0
+   git push origin v2.5.0
+   ```
+3. 构建完成后镜像会推送到 `DOCKERHUB_USERNAME/bilibili_dynamic_lottery`，标签为版本号和 `latest`
+
+> 支持多平台：linux/amd64 和 linux/arm64
+
 ## 注意事项
 1. 记得手动修改Web服务器软件（Nginx/Apache2）的PHP Fast CGI请求超时时间，不然容易在抓取B站数据的过程中后台返回网关504错误，导致请求被中断 Network response was not ok.
 2. 如果有使用PHP-FPM, 也需要修改单个FPM进程允许的最大执行时间 (request_terminate_timeout)， 避免PHP脚本被强行关闭.

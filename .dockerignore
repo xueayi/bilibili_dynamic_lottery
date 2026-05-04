@@ -1,0 +1,17 @@
+.git
+.gitignore
+.DS_Store
+.idea
+.vscode
+vue/node_modules
+vue/dist
+vue/.env
+vue/.env.local
+config/cookie.txt
+api/env.php
+docs
+*.md
+LICENSE
+.gitignore
+docker/config/cookie.txt
+docker/config/env.php
