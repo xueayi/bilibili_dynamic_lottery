@@ -11,7 +11,7 @@ fi
 
 if [ ! -f /var/www/html/api/env.php ]; then
     echo "[entrypoint] env.php 不存在，从示例文件复制..."
-    cp /var/www/html/api/env.example.php /var/www/html/api/env.php
+    cp /var/www/html/docker/config/env.example.php /var/www/html/api/env.php
 fi
 
 # 替换前端 JS 文件中的环境变量占位符
@@ -27,7 +27,7 @@ echo "[entrypoint] 注入前端环境变量..."
 : "${VITE_APP_VERSION:=}"
 
 # 在 dist 目录中的 JS 文件执行占位符替换
-JS_FILES=$(find /var/www/html/dist/assets -name '*.js' 2>/dev/null || true)
+JS_FILES=$(find /var/www/html/assets -name '*.js' 2>/dev/null || true)
 
 if [ -n "$JS_FILES" ]; then
     for file in $JS_FILES; do

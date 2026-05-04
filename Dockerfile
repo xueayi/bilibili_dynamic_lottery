@@ -12,7 +12,7 @@ RUN cp .env.docker .env && npm run build
 FROM php:8.2-fpm-alpine
 
 # 安装 Nginx 和 PHP 扩展
-RUN apk add --no-cache nginx \
+RUN apk add --no-cache nginx curl-dev \
     && docker-php-ext-install curl
 
 # 配置 Nginx
@@ -20,6 +20,7 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # 配置 PHP-FPM
 RUN echo "request_terminate_timeout = 10800" >> /usr/local/etc/php-fpm.d/docker.conf \
+    && echo "slowlog = /proc/self/fd/2" >> /usr/local/etc/php-fpm.d/docker.conf \
     && echo "request_slowlog_timeout = 10800" >> /usr/local/etc/php-fpm.d/docker.conf
 
 WORKDIR /var/www/html
@@ -28,8 +29,8 @@ WORKDIR /var/www/html
 COPY api/ ./api/
 COPY config/ ./config/
 
-# 复制前端构建产物
-COPY --from=frontend-builder /app/vue/dist/ ./dist/
+# 复制前端构建产物到 webroot
+COPY --from=frontend-builder /app/vue/dist/ ./
 
 # 复制 Docker 配置文件
 COPY docker/ ./docker/
